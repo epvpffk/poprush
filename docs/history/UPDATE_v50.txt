@@ -1,0 +1,1 @@
+v50: API·healthz에 Server-Timing app 처리시간 헤더 추가. Windows 도구v7과 같은 요청의 외부 왕복시간을 비교. v48 최적화·v49 서버 요약 유지.

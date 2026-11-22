@@ -1,0 +1,7 @@
+Pixel Peeker Polka - slower / Pixel Peeker Polka - faster / Bit Quest
+Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/
+Original audio. Bit Quest playback accelerates to 1.25x in final 30 seconds.
+
+Bit Quest urgent variant: tempo 1.25x (atempo), derived from the credited Kevin MacLeod original for final 30 seconds.

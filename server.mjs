@@ -1,0 +1,21 @@
+import {withRequestTiming,startPerformanceLog,observeConnections} from './performance.mjs';
+import * as posts from './posts-api.mjs';
+import * as adminTest from './admin-test.mjs';
+import http from 'node:http';import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';
+import * as accounts from './account-api.mjs';import * as arena from './arena-api.mjs';import {closeDatabase} from './database.mjs';
+const root=path.join(path.dirname(fileURLToPath(import.meta.url)),'public');
+const types={'.mp3':'audio/mpeg','.txt':'text/plain; charset=utf-8','.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2'};
+function security(res){res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")}
+const server=http.createServer((req,res)=>withRequestTiming(req,res,async()=>{security(res);try{
+ const host=req.headers.host||'localhost';const scheme=process.env.TRUST_PROXY==='true'&&String(req.headers['x-forwarded-proto']).split(',')[0].trim()==='https'?'https':'http';const base=process.env.PUBLIC_ORIGIN||`${scheme}://${host}`;const url=new URL(req.url||'/',base);
+ if(url.pathname==='/healthz'){res.setHeader('Content-Type','application/json');res.end('{"ok":true}');return}
+ if(url.pathname.startsWith('/api/')){const handlers=url.pathname==='/api/posts'?posts:url.pathname==='/api/admin-test'?adminTest:url.pathname==='/api/account'?accounts:url.pathname==='/api/arena'?arena:null;const method=req.method||'GET';if(!handlers||!handlers[method]){res.writeHead(404,{'Content-Type':'application/json'});res.end('{"error":"찾을 수 없는 요청입니다."}');return}let chunks=[],size=0;for await(const chunk of req){size+=chunk.length;if(size>65536){res.writeHead(413);res.end();return}chunks.push(chunk)}const headers=new Headers();for(const [key,value]of Object.entries(req.headers)){if(key.toLowerCase().startsWith('oai-')||value==null)continue;headers.set(key,Array.isArray(value)?value.join(', '):value)}let input=new Request(url,{method,headers,...(!['GET','HEAD'].includes(method)?{body:Buffer.concat(chunks)}:{})});let response=await handlers[method](input);res.statusCode=response.status;for(const [key,value]of response.headers)if(key!=='set-cookie')res.setHeader(key,value);const cookies=response.headers.getSetCookie();if(cookies.length)res.setHeader('Set-Cookie',cookies);res.end(Buffer.from(await response.arrayBuffer()));return}
+ if(!['GET','HEAD'].includes(req.method||'GET')){res.writeHead(405);res.end();return}let pathname=decodeURIComponent(url.pathname),file=path.resolve(root,'.'+pathname);if(file!==root&&!file.startsWith(root+path.sep)){res.writeHead(403);res.end();return}if(path.extname(file)&&!fs.existsSync(file)){res.writeHead(404);res.end();return}if(!fs.existsSync(file)||fs.statSync(file).isDirectory())file=path.join(root,'index.html');res.setHeader('Content-Type',types[path.extname(file)]||'application/octet-stream');res.setHeader('Cache-Control',(file.endsWith('index.html')||file.endsWith('version.json'))?'no-store':'public, max-age=31536000, immutable');res.end(req.method==='HEAD'?undefined:fs.readFileSync(file))
+ }catch{if(!res.headersSent)res.writeHead(500,{'Content-Type':'application/json'});res.end('{"error":"요청을 처리하지 못했습니다."}')}}));
+observeConnections(server);
+server.keepAliveTimeout=65000;
+server.headersTimeout=70000;
+const stopPerformanceLog=startPerformanceLog();
+const sweep=setInterval(()=>{void arena.settleInactiveRooms().catch(()=>{})},5000);sweep.unref();
+server.listen({port:Number(process.env.PORT||3000),host:'0.0.0.0',backlog:4096},()=>{console.log('COLORPOP_READY '+server.address().port);console.log('POP_RUSH_HTTP_CONFIG '+JSON.stringify({backlog:4096,keepAliveTimeoutMs:server.keepAliveTimeout,headersTimeoutMs:server.headersTimeout}))});
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{clearInterval(sweep);server.close(()=>{closeDatabase();stopPerformanceLog();process.exit(0)})});

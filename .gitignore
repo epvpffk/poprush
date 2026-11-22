@@ -1,0 +1,33 @@
+# Runtime data and account/session state
+data/
+logs/
+backups/
+**/admin-test-accounts.json
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+
+# Installed dependencies, caches and local archives
+node_modules/
+__pycache__/
+*.py[cod]
+*.zip
+*.tar.gz
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Keep public/ and root generated modules: deployment needs them.

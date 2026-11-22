@@ -1,0 +1,13 @@
+{
+  "name": "poprush",
+  "version": "0.59.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node server.mjs",
+    "build": "npm run build --prefix source",
+    "check": "node scripts/check.mjs",
+    "smoke": "node scripts/smoke.mjs"
+  }
+}

@@ -1,0 +1,2 @@
+ALTER TABLE community_posts ADD COLUMN updated INTEGER;
+ALTER TABLE community_posts ADD COLUMN revision INTEGER NOT NULL DEFAULT 0;

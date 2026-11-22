@@ -1,0 +1,7 @@
+Block pop sound supplied by the user.
+Original filename: freesound_gamestudio-clear-combo-3-394477.mp3
+Used unchanged. Author and license were not supplied.
+
+Combo bonus sound supplied by the user.
+Original filename: freesound_gamestudio-get-item-394523.mp3
+Used unchanged. Author and license were not supplied.

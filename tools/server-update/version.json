@@ -1,0 +1,1 @@
+{"version": 4, "windowsTool": 12, "release": "2026-11-02", "features": ["unified-update-entry", "skip-installed", "pooled-http-primary", "single-game-process", "backend-keepalive-64", "proxy-queue-timing", "graceful-interrupt-save", "host-disk-memory-psi-counters", "process-io-deltas", "battle-window-host-report"]}
